@@ -1,4 +1,20 @@
 window.addEventListener('load', init);
+
+var firebaseConfig = {
+    apiKey: "AIzaSyDfooXy4mx4m8G4teen-RGJ1pwKGxn3nWo",
+    authDomain: "fastyper-7d0b6.firebaseapp.com",
+    projectId: "fastyper-7d0b6",
+    storageBucket: "fastyper-7d0b6.appspot.com",
+    messagingSenderId: "784059967668",
+    appId: "1:784059967668:web:7bf03af5afdce863818fe1",
+    measurementId: "G-QBQQ1QYNKG"
+};
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+firebase.analytics();
+
+var scoresRef = firebase.database().ref('scores');
+
 //Initialize Globals
 let time = 5;
 let score = 0;
@@ -11,6 +27,7 @@ const scoreDisplay = document.querySelector('#score');
 const timeDisplay = document.querySelector('#time');
 const message = document.querySelector('#message');
 const seconds = document.querySelector('#message');
+const finalScore = document.querySelector('#final-score')
 
 const words = [
     'boot',
@@ -23,7 +40,6 @@ const words = [
     'unused',
     'plug',
     'burst',
-    'decide',
     'trap'
 ];
 
@@ -40,6 +56,10 @@ function init() {
 
     //check game status
     setInterval(checkStatus, 50);
+
+    
+
+
 }
 //Randomly pick word from array
 function showWord(words) {
@@ -61,12 +81,39 @@ function countdown() {
     timeDisplay.innerHTML = time;
 }
 
-//check game status
+//check game status and send score to DB
 function checkStatus() {
     if (!isPlaying && time === 0) {
+        
         message.innerHTML = 'Game over Boss!!'
+        var maxScore = scoreDisplay.innerHTML;
+        finalScore.innerHTML = 'Your final score is ' + maxScore
+        document.querySelector('.alert').style.display = 'block';
+
+        //add event listener to play again button
+        //submit scores
+        // saveScore(maxScore);
+        
+
+
+    }
+
+}
+function getMaxScore() {
+    if (!isPlaying && time === 0) {
+        var maxScore = scoreDisplay.innerHTML;
+        finalScore.innerHTML = 'Your final score is ' + maxScore
+        saveScore(maxScore)
     }
 }
+//Fxn to save score
+function saveScore( score){
+    var newScoresRef = scoresRef.push();
+    newScoresRef.set({
+        score: score
+    })
+}
+
 
 function startMatch() {
     if(matchWords()) {
