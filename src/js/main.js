@@ -1,4 +1,4 @@
-window.addEventListener('load', init);
+// window.addEventListener('load', init);
 
 var firebaseConfig = {
     apiKey: "AIzaSyDfooXy4mx4m8G4teen-RGJ1pwKGxn3nWo",
@@ -28,6 +28,9 @@ const timeDisplay = document.querySelector('#time');
 const message = document.querySelector('#message');
 const seconds = document.querySelector('#message');
 const finalScore = document.querySelector('#final-score')
+const user = document.querySelector('#user-name')
+
+
 
 const words = [
     'boot',
@@ -43,8 +46,25 @@ const words = [
     'trap'
 ];
 
+function onSignIn(googleUser) {
+    var profile = googleUser.getBasicProfile();
+    
+    document.querySelector('#user-name').innerHTML = profile.getName()
+}
+
+
+function signOut() {
+    var auth2 = gapi.auth2.getAuthInstance();
+    auth2.signOut().then(function () {
+        document.querySelector('#user-name').innerHTML = ''
+            document.querySelector('.alert').style.display = 'none'
+    });
+}
+
+
 //Initialize Game
 function init() {
+  
     //load word from array
     showWord(words);
 
@@ -58,8 +78,19 @@ function init() {
     setInterval(checkStatus, 50);
 
     
+    if (!isPlaying && time === 0) {
+        console.log(scoreDisplay.value)
+    }
+}
+document.addEventListener('keypress', function (e) {
+    if (e.ctrlKey && e.key === 's') {
+        init();
+    }
+});
 
-
+function showMaxScore() {
+    
+    saveScore(user.innerHTML, scoreDisplay.innerHTML)
 }
 //Randomly pick word from array
 function showWord(words) {
@@ -89,6 +120,7 @@ function checkStatus() {
         var maxScore = scoreDisplay.innerHTML;
         finalScore.innerHTML = 'Your final score is ' + maxScore
         document.querySelector('.alert').style.display = 'block';
+        // console.log(maxScore)
 
         //add event listener to play again button
         //submit scores
@@ -102,14 +134,16 @@ function checkStatus() {
 function getMaxScore() {
     if (!isPlaying && time === 0) {
         var maxScore = scoreDisplay.innerHTML;
+        var name = document.querySelector('#user-name').innerHTML
         finalScore.innerHTML = 'Your final score is ' + maxScore
-        saveScore(maxScore)
+        saveScore( maxScore)
     }
 }
 //Fxn to save score
-function saveScore( score){
+function saveScore(name, score){
     var newScoresRef = scoresRef.push();
     newScoresRef.set({
+        name: name,
         score: score
     })
 }
