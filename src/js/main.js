@@ -19,6 +19,7 @@ var scoresRef = firebase.database().ref('scores');
 let time = 5;
 let score = 0;
 let isPlaying;
+let isSignedIn = false
 
 //Grab DOM Elements
 const wordInput = document.querySelector('#word-input');
@@ -48,7 +49,7 @@ const words = [
 
 function onSignIn(googleUser) {
     var profile = googleUser.getBasicProfile();
-    
+    isSignedIn = true
     document.querySelector('#user-name').innerHTML = profile.getName()
 }
 
@@ -57,14 +58,18 @@ function signOut() {
     var auth2 = gapi.auth2.getAuthInstance();
     auth2.signOut().then(function () {
         document.querySelector('#user-name').innerHTML = ''
-            document.querySelector('.alert').style.display = 'none'
+        window.location.reload()
+        isSignedIn = false
     });
 }
 
 
 //Initialize Game
 function init() {
-  
+    //focus cursor on input
+    wordInput.focus()
+    wordInput.select()
+    
     //load word from array
     showWord(words);
 
@@ -77,10 +82,6 @@ function init() {
     //check game status
     setInterval(checkStatus, 50);
 
-    
-    if (!isPlaying && time === 0) {
-        console.log(scoreDisplay.value)
-    }
 }
 document.addEventListener('keypress', function (e) {
     if (e.ctrlKey && e.key === 's') {
@@ -88,10 +89,6 @@ document.addEventListener('keypress', function (e) {
     }
 });
 
-function showMaxScore() {
-    
-    saveScore(user.innerHTML, scoreDisplay.innerHTML)
-}
 //Randomly pick word from array
 function showWord(words) {
     //random index of array
@@ -116,37 +113,14 @@ function countdown() {
 function checkStatus() {
     if (!isPlaying && time === 0) {
         
-        message.innerHTML = 'Game over Boss!!'
+        message.innerHTML = 'Game Over!'
         var maxScore = scoreDisplay.innerHTML;
         finalScore.innerHTML = 'Your final score is ' + maxScore
         document.querySelector('.alert').style.display = 'block';
-        // console.log(maxScore)
-
-        //add event listener to play again button
-        //submit scores
-        // saveScore(maxScore);
-        
-
-
     }
 
 }
-function getMaxScore() {
-    if (!isPlaying && time === 0) {
-        var maxScore = scoreDisplay.innerHTML;
-        var name = document.querySelector('#user-name').innerHTML
-        finalScore.innerHTML = 'Your final score is ' + maxScore
-        saveScore( maxScore)
-    }
-}
-//Fxn to save score
-function saveScore(name, score){
-    var newScoresRef = scoresRef.push();
-    newScoresRef.set({
-        name: name,
-        score: score
-    })
-}
+
 
 
 function startMatch() {
@@ -179,4 +153,23 @@ function matchWords() {
         message.innerHTML = '';
         return false;
     }
+}
+
+//Fxn to save score
+function saveScore(name, score){
+    var newScoresRef = scoresRef.push();
+    newScoresRef.set({
+        name: name,
+        score: score
+    })
+}
+function submitMaxScore() {
+    if (isSignedIn) {
+        saveScore(user.innerHTML, scoreDisplay.innerHTML)
+        document.querySelector('#submit-success').innerHTML = 'Score Submitted'
+        window.location.reload();
+    } else {
+        confirm('Please Sign In')
+    }
+    
 }
